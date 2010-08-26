@@ -1,12 +1,6 @@
 # encoding: utf-8
 
 """
-validatron.py
-
-A simple validation library for verifying structure and other details of given
-data. The motivation for creating this library was failing fast on data
-recieved from web services.
-
 >>> class A(object):
 ...     def __init__(self, a, b):
 ...         self.a = a
