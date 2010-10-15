@@ -69,9 +69,11 @@ class ModelType(type):
 
         new_class = super(ModelType, cls).__new__(cls, name, bases, attrs)
 
+        def is_inheritable(parent):
+            return isinstance(parent, ModelType) and hasattr(parent, '_meta')
+
         for parent in new_class.__mro__:
-            if (not parent is cls and isinstance(parent, ModelType) and
-                hasattr(parent, '_meta')):
+            if (not parent is cls and is_inheritable(parent)):
                 _meta.inherit_from(parent._meta)
         setattr(new_class, '_meta', _meta)
 
