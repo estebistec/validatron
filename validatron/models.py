@@ -1,9 +1,11 @@
+#coding=utf-8
+
 # TODO create an i18n/l10n-able message registry
 
 """
 >>> class C(Model):
-...     a = Field()
-...     b = Field(optional=True)
+...     a = IntegerField()
+...     b = StringField(optional=True)
 ...     c = StringField()
 >>> c0 = C()
 >>> c0.validate()
@@ -22,8 +24,13 @@
 """
 
 
+__author__ = 'Steven Cummings'
+__all__ = ()
+
 class Field(object):
     def __init__(self, optional=False, default_value=None):
+        if type(self) is Field:
+            raise TypeError('Field should not be directly instantiated')
         self._optional = optional
         self._default_value = default_value
     @property
@@ -43,8 +50,22 @@ class StringField(Field):
         base_problems = super(StringField, self).validate(value)
         if base_problems:
             return base_problems
-        if len(value) == 0:
-            return 'missing'
+        if value is not None:
+            if not isinstance(value, basestring):
+                return 'not a string'
+            if len(value) == 0:
+                return 'missing'
+
+
+class IntegerField(Field):
+    # min, max
+    def validate(self, value):
+        base_problems = super(IntegerField, self).validate(value)
+        if base_problems:
+            return base_problems
+        if value is not None:
+            if not isinstance(value, int):
+                return 'not an integer'
 
 
 class ValidationModelMetadata(object):
