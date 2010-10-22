@@ -25,7 +25,11 @@
 
 
 __author__ = 'Steven Cummings'
-__all__ = ()
+__all__ = ('Field', 'StringField', 'IntegerField', 'Model')
+
+
+import re
+
 
 class Field(object):
     def __init__(self, optional=False, default_value=None):
@@ -45,7 +49,12 @@ class Field(object):
 
 
 class StringField(Field):
-    # TODO pattern option
+    def __init__(self, pattern=None, pattern_flags=None, *args, **kwargs):
+        super(StringField, self).__init__(*args, **kwargs)
+        self._pattern = (re.compile(pattern, pattern_flags) 
+                         if pattern_flags 
+                         else re.compile(pattern)
+                         if pattern else None)
     def validate(self, value):
         base_problems = super(StringField, self).validate(value)
         if base_problems:
@@ -55,17 +64,26 @@ class StringField(Field):
                 return 'not a string'
             if len(value) == 0:
                 return 'missing'
+            if self._pattern and not self._pattern.match(value):
+                return 'non match'
 
 
 class IntegerField(Field):
-    # min, max
+    def __init__(self, min_value=None, max_value=None, *args, **kwargs):
+        super(IntegerField, self).__init__(*args, **kwargs)
+        self._min_value = min_value
+        self._max_value = max_value
     def validate(self, value):
         base_problems = super(IntegerField, self).validate(value)
         if base_problems:
             return base_problems
         if value is not None:
-            if not isinstance(value, int):
+            if not isinstance(value, (int, long)):
                 return 'not an integer'
+            if self._min_value and value < self._min_value:
+                return 'less than minimum'
+            if self._max_value and value > self._max_value:
+                return 'greater than maximum'
 
 
 class ValidationModelMetadata(object):
