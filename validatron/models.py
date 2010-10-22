@@ -26,14 +26,12 @@ class Field(object):
     def __init__(self, optional=False, default_value=None):
         self._optional = optional
         self._default_value = default_value
-    def is_optional(self):
+    @property
+    def optional(self):
         return self._optional
-    optional = property(is_optional, doc='Indicates whether or not a value is '
-                                         'required for the field')
-    def get_default_value(self):
+    @property
+    def default_value(self):
         return self._default_value
-    default_value = property(get_default_value, doc='Default value to assign '
-                                                    'to the field')
     def validate(self, value):
         if not self.optional and value is None:
             return 'missing'
@@ -80,13 +78,6 @@ class ModelType(type):
         return new_class
 
 
-def getattr_or_none(obj, attr_name):
-    try:
-        return getattr(obj, attr_name)
-    except AttributeError:
-        return None
-
-
 class Model(object):
     __metaclass__ = ModelType
     def __init__(self, **kwargs):
@@ -107,7 +98,7 @@ class Model(object):
         """
         problems = {}
         for field_name, field in self._meta.fields.iteritems():
-            value = getattr_or_none(self, field_name)
+            value = getattr(self, field_name, None)
             field_problems = field.validate(value)
             if field_problems:
                 problems[field_name] = field_problems
