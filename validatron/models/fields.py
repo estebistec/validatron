@@ -67,12 +67,18 @@ class StringField(Field):
     'non match'
     """ 
 
-    def __init__(self, pattern=None, pattern_flags=None, *args, **kwargs):
+    def __init__(self, empty=False, pattern=None, pattern_flags=None, *args, 
+                 **kwargs):
         super(StringField, self).__init__(*args, **kwargs)
+        self._empty = empty
         self._pattern = (re.compile(pattern, pattern_flags) 
                          if pattern_flags 
                          else re.compile(pattern)
                          if pattern else None)
+
+    @property
+    def empty(self):
+        return self._empty
 
     @property
     def pattern(self):
@@ -85,9 +91,9 @@ class StringField(Field):
         if value is not None:
             if not isinstance(value, basestring):
                 return _('not a string')
-            if len(value) == 0:
+            if not self.empty and len(value) == 0:
                 return _('empty value')
-            if self.pattern and not self.pattern.match(value):
+            if value and self.pattern and not self.pattern.match(value):
                 return _('non match')
 
 
